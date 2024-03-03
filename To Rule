@@ -1,0 +1,41 @@
+package com.mycompany.cobol.sample.checks;
+
+import com.sonar.sslr.api.AstNode;
+import com.sonarsource.cobol.api.ast.CobolCheck;
+
+import java.awt.dnd.DropTargetContext;
+
+import org.sonar.check.Priority;
+import org.sonar.check.Rule;
+
+/**
+ * Custom rule to check that the TO keyword starts from column number 40.
+ */
+@Rule(
+    key = "ToKeywordPositionCheck",
+    name = "TO Keyword Position Check",
+    priority = Priority.CRITICAL,
+    tags = {"convention"}
+)
+public class ToKeywordPositionCheck extends CobolCheck {
+
+    @Override
+    public void init() {
+        subscribeTo(getCobolGrammar().moveStatement);
+    }
+
+    @Override
+    public void visitNode(AstNode moveStatementNode) {
+       AstNode toKeywordAstNode=moveStatementNode.getFirstDescendant(getCobolGrammar().dataValueTo);
+        if(toKeywordAstNode!=null)
+        {
+        	int Startcolumn=toKeywordAstNode.getToken().getColumn();
+        	int endcolumn=Startcolumn+toKeywordAstNode.getToken().getValue().length()-1;
+        	System.out.println(Startcolumn+" "+endcolumn);
+        	if(Startcolumn<40||endcolumn>41)
+        	{
+        	 reportIssue("TO keyword in MOVE statement should be within columns 40 and 41.").on(toKeywordAstNode);
+        	}
+        }
+    }
+}
